@@ -1,2 +1,74 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+from flask import Flask,render_template,request,redirect
+
+app = Flask(__name__)
+students = [
+    {'name':'张三', 'chinese':'65','math':'65','english':'65'},
+    {'name':'李四', 'chinese':'65','math':'65','english':'65'},
+    {'name':'王五', 'chinese':'65','math':'65','english':'65'},
+    {'name':'李六', 'chinese':'65','math':'65','english':'65'},
+]
+@app.route('/')
+def hello_world():  # put application's code here
+    return 'Hello World!'
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username=request.form.get('username')
+        password=request.form.get('password')
+        print('从服务器接受的的数据：',username,password)
+        return redirect('/admin')
+    return render_template('login.html')
+
+@app.route('/admin')
+def admin():
+    return render_template('admin.html',students=students)
+
+@app.route('/add',methods=['GET','POST'])
+def add():
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        chinese = request.form.get('chinese')
+        math = request.form.get('math')
+        english = request.form.get('english')
+        print ('获取的学员信息',username,chinese,math,english)
+        students.append({'name':username, 'chinese':chinese,'math':math,'english':english})
+        return redirect('/admin')
+    return render_template('add.html')
+
+
+@app.route('/delete')
+def delete_student():
+    print(request.method)
+    username = request.args.get('name')
+    for stu in students:
+        if stu['name'] == username:
+            students.remove(stu)
+    return redirect('/admin')
+
+
+@app.route('/change',methods=['GET','POST'])
+def change_student():
+    username = request.args.get('name')
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        chinese = request.form.get('chinese')
+        math = request.form.get('math')
+        english = request.form.get('english')
+
+        for stu in students:
+            if stu['name'] == username:
+                stu['chinese'] = chinese
+                stu['math'] = math
+                stu['english'] = english
+        return redirect('/admin')
+
+    for stu in students:
+        if stu['name'] == username:
+            return render_template('change.html',student=stu)
+
+
+if __name__ == '__main__':
+    app.run()
